@@ -384,3 +384,90 @@ wdir_df["wspd_era5_cmod5n"] = wdir_df.apply(lambda x: cmod5n(x.sig0, x.wdir_wrt_
 
 # Save
 wdir_df.to_csv(os.path.join(home, "Data/Wind_Direction/wdir_df.csv"))
+
+
+
+###############################################################################################
+# Calculate wind speed for two images to use as example figures 
+###############################################################################################
+wind_df = pd.read_csv(os.path.join(home, "Data/Wind_Direction/wdir_df.csv"))
+
+
+# West lake ontario 
+###############################################################################################
+# Load in the sig0, inc angle, and wind direction datasets 
+from rasterio.enums import Resampling
+import xarray
+
+infile = os.path.join(home, "Data/Sentinel1/Processed/S1A_IW_GRDH_1SDV_20230520T231641_20230520T231706_048624_05D926_1C5B.nc")
+ds = rioxarray.open_rasterio(infile)
+wd_fp = glob.glob(os.path.join(home, "Data/Wind_Direction/Sentinel1/ERA5_Corrected", "corrected_wdir_10pixels_" + os.path.basename(infile)[:-3] + ".tif"))[0]
+wd = rioxarray.open_rasterio(wd_fp, band_as_variable = True)
+wd = wd.rename({'band_1': 'wd'})
+
+# Resample the sig0 and incidence angle to match the wind direction since it is coarser 
+ds_upsampled = ds.rio.reproject(dst_crs=wd.wd.rio.crs, 
+                                #resolution=wd.wd.rio.resolution(), 
+                                shape=wd.wd.rio.shape, 
+                                transform=wd.wd.rio.transform(), 
+                                resampling=Resampling.bilinear)
+ds_upsampled = xarray.combine_by_coords([ds_upsampled, wd])
+
+# Calculate phi: in [deg] angle between azimuth and wind direction (= D - AZM)
+platform_heading = ds_upsampled.attrs['platform_heading']
+platform_heading = np.mod(0 + platform_heading, 360)
+look_direction = np.mod(platform_heading + 90, 360)
+ds_upsampled['phi'] = np.mod(ds_upsampled.wd - look_direction, 360)
+
+def apply_cmod5n(sigma0_obs, phi, incidence):
+    if ((np.isnan(sigma0_obs)==True) | (np.isnan(phi)==True) | (np.isnan(incidence)==True)) :
+        return np.nan
+    else:
+        return cmod5n_inverse( np.array([sigma0_obs]), np.array([phi]), np.array([incidence]), iterations=10)[0]
+cmod5n_func = np.vectorize(apply_cmod5n)  
+wind_speed = cmod5n_func(ds_upsampled.sig0.to_numpy()[0,:,:], ds_upsampled.phi.to_numpy(), ds_upsampled.inc_angle.to_numpy()[0,:,:])
+ds_upsampled['wind_speed'] = (['y', 'x'], wind_speed)
+ds_upsampled.wind_speed.rio.write_nodata(np.nan, encoded=True, inplace=True)
+ds_upsampled.wind_speed.rio.to_raster(os.path.join(home, "Data/Outputs", "wspd_" + os.path.basename(infile)[:-3] + ".tif"))
+
+ds_upsampled.to_netcdf(os.path.join(home, "Data/Outputs", "wspd_" + os.path.basename(infile)[:-3] + ".nc"))
+
+
+
+# Lake Washington
+###############################################################################################
+# Load in the sig0, inc angle, and wind direction datasets 
+from rasterio.enums import Resampling
+import xarray
+
+infile = os.path.join(home, "Data/Sentinel1/Processed/S1A_IW_GRDH_1SDV_20230321T015425_20230321T015450_047736_05BBFD_A2DE.nc")
+ds = rioxarray.open_rasterio(infile)
+wd_fp = glob.glob(os.path.join(home, "Data/Wind_Direction/Sentinel1/ERA5_Corrected", "corrected_wdir_10pixels_" + os.path.basename(infile)[:-3] + ".tif"))[0]
+wd = rioxarray.open_rasterio(wd_fp, band_as_variable = True)
+wd = wd.rename({'band_1': 'wd'})
+
+# Resample the sig0 and incidence angle to match the wind direction since it is coarser 
+ds_upsampled = ds.rio.reproject(dst_crs=wd.wd.rio.crs, 
+                                #resolution=wd.wd.rio.resolution(), 
+                                shape=wd.wd.rio.shape, 
+                                transform=wd.wd.rio.transform(), 
+                                resampling=Resampling.bilinear)
+ds_upsampled = xarray.combine_by_coords([ds_upsampled, wd])
+
+# Calculate phi: in [deg] angle between azimuth and wind direction (= D - AZM)
+platform_heading = ds_upsampled.attrs['platform_heading']
+platform_heading = np.mod(0 + platform_heading, 360)
+look_direction = np.mod(platform_heading + 90, 360)
+ds_upsampled['phi'] = np.mod(ds_upsampled.wd - look_direction, 360)
+
+def apply_cmod5n(sigma0_obs, phi, incidence):
+    if ((np.isnan(sigma0_obs)==True) | (np.isnan(phi)==True) | (np.isnan(incidence)==True)) :
+        return np.nan
+    else:
+        return cmod5n_inverse( np.array([sigma0_obs]), np.array([phi]), np.array([incidence]), iterations=10)[0]
+cmod5n_func = np.vectorize(apply_cmod5n)  
+wind_speed = cmod5n_func(ds_upsampled.sig0.to_numpy()[0,:,:], ds_upsampled.phi.to_numpy(), ds_upsampled.inc_angle.to_numpy()[0,:,:])
+ds_upsampled['wind_speed'] = (['y', 'x'], wind_speed)
+ds_upsampled.wind_speed.rio.write_nodata(np.nan, encoded=True, inplace=True)
+ds_upsampled.wind_speed.rio.to_raster(os.path.join(home, "Data/Outputs", "wspd_" + os.path.basename(infile)[:-3] + ".tif"))
+

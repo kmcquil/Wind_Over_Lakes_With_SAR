@@ -716,6 +716,30 @@ for i in range(0, len(swot2_files)):
     wind_direction_by_image("SWOT", infile, outfile, boundary, "NA", N, 0.6, 0.4)
 
 
+################################################################################################
+# 3 extra files that didn't have matchups, don't include in actual analysis 
+################################################################################################
+# Just do 3 files 
+extra_files = ["C:/Users/kmcquil/Documents/SWOT_WIND/Data/SWOT_L2_HR_Raster/SWOT_L2_HR_Raster_2.0/SWOT_L2_HR_Raster_100m_UTM18T_N_x_x_x_010_048_039F_20240126T165014_20240126T165035_PIC0_01.nc", 
+               "C:/Users/kmcquil/Documents/SWOT_WIND/Data/SWOT_L2_HR_Raster/SWOT_L2_HR_Raster_2.0/SWOT_L2_HR_Raster_100m_UTM18T_N_x_x_x_011_397_116F_20240229T011603_20240229T011624_PIC0_01.nc", 
+               "C:/Users/kmcquil/Documents/SWOT_WIND/Data/SWOT_L2_HR_Raster/SWOT_L2_HR_Raster_2.0/SWOT_L2_HR_Raster_100m_UTM18T_N_x_x_x_012_397_116F_20240320T220106_20240320T220127_PIC0_01.nc"]
+
+for i in range(0, len(extra_files)):
+    infile = extra_files[i]
+    outfile = os.path.join(home, "Data/Wind_Direction/SWOT_L2_HR_Raster_2.0", "wdir_" + str(N) + "pixels_" + os.path.basename(infile[:-3]) + ".tif")
+    if os.path.isfile(outfile): continue
+    wind_direction_by_image("SWOT", infile, outfile, boundary, "NA", N, 0.6, 0.4)
+
+import shutil
+for i in range(0, len(extra_files)):
+    infile = extra_files[i]
+    outfile = os.path.join(home, "Data/Wind_Direction/SWOT_L2_HR_Raster_2.0", "ERA5_Corrected","corrected_wdir_" + str(N) + "pixels_" + os.path.basename(infile[:-3]) + ".tif")
+    wd_out = os.path.join("C:/Users/kmcquil/Documents/SWOT_WIND/Data/Maps/SWOT/", os.path.basename(outfile))
+    shutil.copy(outfile, wd_out)
+################################################################################################
+################################################################################################
+
+
 #########################################################################################
 # Wind direction no QC at 2km resolution 
 N = 20

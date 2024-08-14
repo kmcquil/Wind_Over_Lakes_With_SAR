@@ -29,7 +29,7 @@ noah_stations <- fread(paste0(home, "Data/Buoy/NOAA/noah_national_buoy_center_ac
 noah_stations <- st_as_sf(noah_stations, coords=c("lon", "lat"), crs=4326)
 noah_stations$source <- "Noah National Data Buoy Center"
 
-# List PLD shapefiles 
+# List PLD shapefiles
 pld_files <- list.files(paste0(home, "Data/SWOT_PLD"), full.names = TRUE, pattern = "*.shp$")
 pld_files <- pld_files[grepl("pfaf", pld_files)]
 
@@ -444,7 +444,6 @@ all_stations$latitude <- st_coordinates(noah_stations)[,2]
 #fwrite(all_stations, paste0(home, "Data/Buoy/buoy_info.csv"))
 # Add the Swiss Datalakes and King County, WA buoys manually in excel 
 
-
 #######################################################################################
 #######################################################################################
 # Identify the PLD ID that each buoy is located within 
@@ -462,7 +461,6 @@ buoy_info_sf <- st_as_sf(buoy_info, coords=c("longitude", "latitude"), crs=4326)
 # Spatial intersect to find the pld_id
 int_mat <- st_intersects(buoy_info_sf, pld_sub, sparse = FALSE)
 
-
 get_idx <- function(x){
     idx = which(x==1)
     if(length(idx) == 0){
@@ -477,8 +475,6 @@ buoy_info$pld_id <- pld_id
 buoy_info[id == "buchillonfieldstation",]$pld_id <- "2160046863"
 buoy_info[id == "LMFS1",]$pld_id <- "7320411603"
 fwrite(buoy_info, paste0(home, "Data/Buoy/buoy_info.csv"))
-
-
 
 #######################################################################################
 #######################################################################################
@@ -598,4 +594,3 @@ buoy_info_sf <- buoy_info_sf[!buoy_info_sf$id == "45135",]
 colnames(buoy_info_45135) <- colnames(buoy_info_sf)
 buoy_info_sf <- rbind(buoy_info_sf, buoy_info_45135)
 st_write(buoy_info_sf, paste0(home, "Data/Buoy/buoy_info.shp"), append=FALSE)
-
