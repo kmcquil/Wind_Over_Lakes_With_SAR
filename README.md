@@ -1,3 +1,3 @@
-## Estimating wind from SAR over lakes
+## Estimating wind direction and wind speed over lakes with SWOT and Sentinel-1 satellite observations 
 
-This repository contains all scripts used to estimate wind direction and wind speed from Sentinel-1 and SWOT over lakes. Manuscript currently under review. 
+This repository contains all scripts used to download data, estimate wind fields, and validate at buoys. Manuscript currently under review. 
