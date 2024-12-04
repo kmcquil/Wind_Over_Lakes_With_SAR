@@ -1,7 +1,7 @@
 ##########################################################################################
 # Katie Mcquillan
 # 05/17/2024
-# Calculate wind direction using the LG-Mod method from Rana et al. 2015
+# Calculate wind direction, wind speed, and extract at buoy locations
 ##########################################################################################
 
 import os

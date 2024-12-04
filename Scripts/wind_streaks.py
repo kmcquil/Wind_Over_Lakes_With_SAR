@@ -39,25 +39,21 @@ wdir_subset = wind_df.dropna(subset=["wdir_corrected", "wdir_buoy"])
 wdir_subset = wdir_subset[abs(wdir_subset["time_diff"]) < timedelta(hours=1)]
 wdir_subset = wdir_subset[wdir_subset["wdir_id"] == "wdir_10pixels_"]
 
-
 # Calculate the difference between the LG WDIR and Buoy WDIR
 def calc_mae(obs, pred):
     d1 = (pred - obs) % 360
     d2 = 360 - d1
     return min(d1, d2)
 
-
 wdir_subset["wdir_diff"] = wdir_subset.apply(
     lambda x: calc_mae(x.wdir_corrected, x.wdir_buoy), axis=1
 )
-
 
 # Create a df of just buoy id and image id
 df = wdir_subset[["buoy_id", "satellite", "image_id", "wdir_diff"]]
 # Add another column with the buoy-image-id
 df["buoy_image_id"] = list(range(0, df.shape[0]))
 # df.to_csv(os.path.join(home, "Data/Wind_Streaks/wind_streak_check.csv"))
-
 
 def clip_sig0(buoy_image_id):
     fp_out = os.path.join(home, "Data/Wind_Streaks/Clips", str(buoy_image_id) + ".png")
@@ -131,7 +127,6 @@ def clip_sig0(buoy_image_id):
     plt.close()
     src.close()
     return
-
 
 # Loop through the IDs
 buoy_image_ids = df["buoy_image_id"].tolist()

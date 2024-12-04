@@ -35,7 +35,6 @@ def calc_performance_stats_180(df):
     df: pd df
     return df of metrics
     """
-
     def calc_bias(o, p, m):
         o_upper = (o + 180) % 360
         if o_upper < o:
@@ -48,7 +47,6 @@ def calc_performance_stats_180(df):
                 return m
             else:
                 return m * -1
-
     # LG Wind Direction with aliased wind direction by using era5
     sub = df.dropna(subset=["wdir_corrected", "wdir_buoy"])
     if sub.shape[0] < 3:
@@ -63,7 +61,7 @@ def calc_performance_stats_180(df):
         d1 = [(p_i - o_i) % 360 for p_i, o_i in zip(pred, obs)]
         d2 = [360 - i for i in d1]
         mae = [min(i, j) for i, j in zip(d1, d2)]
-        # Bias. If the predicted is within + 180 from the observed, it is positive. 
+        # Bias. If the predicted is within + 180 from the observed, it is positive.
         # If the predicted is within - 180 from the observed, it is negative
         bias = [calc_bias(o, p, m) for o, p, m in zip(obs, pred, mae)]
         # Root mean square error
@@ -74,7 +72,6 @@ def calc_performance_stats_180(df):
             [["WDIR-LG", sub.shape[0], bias, mae, rmse]],
             columns=["ID", "N", "Bias", "MAE", "RMSE"],
         )
-
     # LG Wind direction just seeing how far apart they are in terms of 180
     if sub.shape[0] < 3:
         row6 = pd.DataFrame(
@@ -85,7 +82,6 @@ def calc_performance_stats_180(df):
         obs = sub["wdir_buoy"].tolist()
         pred = sub["wdir"].tolist()
         pred_180 = [(p + 180) % 360 for p in pred]
-
         # MAE. Get the smallest difference using pred and pred_180
         d1 = [(p_i - o_i) % 360 for p_i, o_i in zip(pred, obs)]
         d2 = [360 - i for i in d1]
@@ -97,7 +93,6 @@ def calc_performance_stats_180(df):
             [["WDIR-LG-180", sub.shape[0], np.nan, mae, np.nan]],
             columns=["ID", "N", "Bias", "MAE", "RMSE"],
         )
-
     # ERA5 Wind Direction. Use the same subset as for the LG wind direction so it's a direct comparison
     if sub.shape[0] < 3:
         row2 = pd.DataFrame(
@@ -111,7 +106,7 @@ def calc_performance_stats_180(df):
         d1 = [(p_i - o_i) % 360 for p_i, o_i in zip(pred, obs)]
         d2 = [360 - i for i in d1]
         mae = [min(i, j) for i, j in zip(d1, d2)]
-        # Bias. If the predicted is within + 180 from the observed, it is positive. 
+        # Bias. If the predicted is within + 180 from the observed, it is positive.
         # If the predicted is within - 180 from the observed, it is negative
         bias = [calc_bias(o, p, m) for o, p, m in zip(obs, pred, mae)]
         # Root mean square error
@@ -122,7 +117,6 @@ def calc_performance_stats_180(df):
             [["WDIR-ERA5", sub.shape[0], bias, mae, rmse]],
             columns=["ID", "N", "Bias", "MAE", "RMSE"],
         )
-
     # LG Wind direction just seeing how far apart they are in terms of 180
     if sub.shape[0] < 3:
         row7 = pd.DataFrame(
@@ -133,7 +127,6 @@ def calc_performance_stats_180(df):
         obs = sub["wdir_buoy"].tolist()
         pred = sub["wdir_era5"].tolist()
         pred_180 = [(p + 180) % 360 for p in pred]
-
         # MAE. Get the smallest difference using pred and pred_180
         d1 = [(p_i - o_i) % 360 for p_i, o_i in zip(pred, obs)]
         d2 = [360 - i for i in d1]
@@ -145,9 +138,9 @@ def calc_performance_stats_180(df):
             [["WDIR-ERA5-180", sub.shape[0], np.nan, mae, np.nan]],
             columns=["ID", "N", "Bias", "MAE", "RMSE"],
         )
-
     # CMOD5.n LG wind speed
-    sub = df.dropna(subset=["wspd_sat_cmod5n", "wspd_buoy"])
+    #sub = df.dropna(subset=["wspd_sat_cmod5n", "wspd_buoy"])
+    sub = df.dropna(subset=["wspd_sat_cmod5n", "buoy_wspd_10m"])
     # Don't include buchillon field station
     sub = sub[sub["buoy_id"] != "buchillonfieldstation"]
     if sub.shape[0] < 3:
@@ -156,7 +149,8 @@ def calc_performance_stats_180(df):
             columns=["ID", "N", "Bias", "MAE", "RMSE"],
         )
     else:
-        obs = sub["wspd_buoy"].tolist()
+        #obs = sub["wspd_buoy"].tolist()
+        obs = sub["buoy_wspd_10m"].tolist()
         pred = sub["wspd_sat_cmod5n"].tolist()
         bias = np.mean(np.subtract(pred, obs))
         mae = np.mean(np.abs(np.subtract(pred, obs)))
@@ -165,7 +159,6 @@ def calc_performance_stats_180(df):
             [["WSPD-CMOD5-SAR", sub.shape[0], bias, mae, rmse]],
             columns=["ID", "N", "Bias", "MAE", "RMSE"],
         )
-
     # CMOD5.n ERA5 wind speed
     if sub.shape[0] < 3:
         row4 = pd.DataFrame(
@@ -173,7 +166,8 @@ def calc_performance_stats_180(df):
             columns=["ID", "N", "Bias", "MAE", "RMSE"],
         )
     else:
-        obs = sub["wspd_buoy"].tolist()
+        #obs = sub["wspd_buoy"].tolist()
+        obs = sub["buoy_wspd_10m"].tolist()
         pred = sub["wspd_era5_cmod5n"].tolist()
         bias = np.mean(np.subtract(pred, obs))
         mae = np.mean(np.abs(np.subtract(pred, obs)))
@@ -182,7 +176,6 @@ def calc_performance_stats_180(df):
             [["WSPD-CMOD5-ERA5", sub.shape[0], bias, mae, rmse]],
             columns=["ID", "N", "Bias", "MAE", "RMSE"],
         )
-
     # ERA5 wind speed
     if sub.shape[0] < 3:
         row5 = pd.DataFrame(
@@ -190,7 +183,8 @@ def calc_performance_stats_180(df):
             columns=["ID", "N", "Bias", "MAE", "RMSE"],
         )
     else:
-        obs = sub["wspd_buoy"].tolist()
+        #obs = sub["wspd_buoy"].tolist()
+        obs = sub["buoy_wspd_10m"].tolist()
         pred = sub["wspd_era5"].tolist()
         bias = np.mean(np.subtract(pred, obs))
         mae = np.mean(np.abs(np.subtract(pred, obs)))
@@ -199,7 +193,6 @@ def calc_performance_stats_180(df):
             [["WSPD-ERA5", sub.shape[0], bias, mae, rmse]],
             columns=["ID", "N", "Bias", "MAE", "RMSE"],
         )
-
     df = pd.concat([row1, row6, row2, row7, row3, row4, row5], axis=0)
     return df
 
@@ -282,7 +275,7 @@ wind_df = wind_df.drop(
         "end_2024",
     ]
 ).reset_index(drop=True)
-# Dropped 32 observations because of ice 
+# Dropped 32 observations because of ice
 
 # convert distance and fetch to km
 wind_df["distance"] = wind_df["distance"] / 1000
@@ -297,6 +290,11 @@ wind_df["satellite"] = wind_df["satellite"].map(
 
 # drop  buchillon station
 wind_df = wind_df[wind_df["buoy_id"] != "buchillonfieldstation"]
+
+# drop rows that are s1 but don't have wind speed estiamted.
+wind_df = wind_df[
+    ~((wind_df["wspd_sat_cmod5n"].isnull()) & (wind_df["satellite"] == "S1"))
+]
 
 # Create df with just entries with wind streaks
 wind_df_ws = wind_df[wind_df["wind_streak"] == "Yes"]
@@ -333,10 +331,13 @@ buoy_df = buoy_df.rename(
 )
 buoy_df["Height"] = buoy_df["Height"].round(3)
 
+
 # Add which satellite
 def which_satellite(id):
     sub = wind_df[wind_df["buoy_id"] == id]
     return ", ".join(list(set(sub["satellite"])))
+
+
 buoy_df["Satellite"] = list(map(which_satellite, buoy_df["ID"].tolist()))
 buoy_df = buoy_df.sort_values("ID")
 
@@ -353,6 +354,11 @@ sat_count = (
 sat_count_wide = sat_count.pivot(
     index="buoy_id", columns="satellite", values="wdir"
 ).reset_index()
+sat_count_wide["S1"].min()
+sat_count_wide["S1"].max()
+sat_count_wide["SWOT"].min()
+sat_count_wide["SWOT"].max()
+
 buoy_df = buoy_df.merge(sat_count_wide.rename(columns={"buoy_id": "ID"}))
 buoy_df.groupby("Source").count()
 
@@ -404,7 +410,7 @@ b.set_yticklabels(np.round(b.get_yticks(), 1), size=20)
 b.set_xticklabels([int(i) for i in b.get_xticks()], size=20)
 sns.set_context("paper", rc={"figure.figsize": (6, 3)})
 plt.xlabel("Lake Area (km$^{2}$)", size=25)
-plt.ylabel("Proportion", size=25)
+plt.ylabel("CDF", size=25)
 # plt.show()
 plt.savefig(
     os.path.join(home, "Data/Figures/pld_area_cdf.png"), dpi=1000, bbox_inches="tight"
@@ -462,7 +468,8 @@ def save_examples(row):
     sig0_clipped = sig0.rio.clip(boundary_reproj.geometry.values, boundary_reproj.crs)
     sig0_clipped = sig0_clipped.where(sig0_clipped != sig0_clipped.rio.nodata)
     sig0_out = folder_out + "/sig0_" + image_id + ".tif"
-    sig0_clipped.rio.to_raster(sig0_out)
+    # sig0_clipped.rio.to_raster(sig0_out)
+    sig0.rio.to_raster(sig0_out)
     src.close()
 
     # Save the buoy with the wind direction
@@ -534,6 +541,7 @@ def save_examples(row):
     gdf.to_file(os.path.join(folder_out, "wdir_" + image_id + ".shp"))
 
     return
+
 
 # SAR image to visualize: S1A_IW_GRDH_1SDV_20230520T231641_20230520T231706_048624_05D926_1C5B
 row = wind_df[
@@ -659,7 +667,7 @@ sns.barplot(
     data=ws_summary,
 )
 ax1.set_xlabel("Satellite", size=12)
-ax1.set_ylabel("Image-buoy count", size=12)
+ax1.set_ylabel("Buoy-image count", size=12)
 ax1.legend(title="Wind Streaks")
 
 # Box plot of the wind streak presence/absence grouped by wind speed
@@ -694,7 +702,7 @@ plt.savefig(
 )
 
 ###############################################################################################
-# Table 2. MAE of wind direction for All, All with ME thresholds,
+# Table 1. MAE of wind direction for All, All with ME thresholds,
 #  with ME thresholds Wind streaks, wind streaks
 ###############################################################################################
 
@@ -771,6 +779,31 @@ overall_table = overall_table[overall_table["N"] > 0]
 # Save the wind direction performance table
 overall_table.to_csv(os.path.join(home, "Data/Outputs/wdir_perf.csv"))
 
+
+########################################################################################3
+# What is the performance without 180 degree ambiguity
+overall_table_na = perf_overall[perf_overall["ID"].isin(["WDIR-LG", "WDIR-ERA5"])]
+# Get rid of the 'No Wind Streaks'
+overall_table_na = overall_table_na[
+    overall_table_na["Wind_Streak"] != "No Wind Streaks"
+]
+# Drop 'resolution', 'bias', and 'rmse'.
+# We are only looking at 1 km resolution and did not calculate bias or rmse for 180 degree ambiguous wdir
+overall_table_na = overall_table_na.drop(["Resolution", "Bias", "RMSE"], axis=1)
+# Pivot so that era5 and lg-mod each have their own column in the table
+overall_table_na = (
+    overall_table_na.pivot(
+        index=["Satellite", "Wind_Streak", "ME Limit", "N"], columns="ID", values="MAE"
+    )
+    .round(2)
+    .reset_index()
+)
+# Sort according to ME limit
+overall_table_na = overall_table_na.sort_values(
+    ["Satellite", "Wind_Streak", "ME Limit"], ascending=[True, True, False]
+)
+overall_table_na = overall_table_na[overall_table_na["N"] > 0]
+########################################################################################
 
 # Make this into a bar plot
 overall_table_wdir = overall_table.copy()
@@ -858,8 +891,9 @@ plt.savefig(
     bbox_inches="tight",
 )
 
+
 ###############################################################################################
-# Table 3. Perf stats of wind speed for All, All with ME thresholds,
+# Table 2. Perf stats of wind speed for All, All with ME thresholds,
 #  with ME thresholds Wind streaks, wind streaks
 ###############################################################################################
 # Select the wind speed performance
@@ -1190,8 +1224,9 @@ plt.savefig(os.path.join(home, "Data/Figures/wspd_perf_boxplots.png"), dpi=1000)
 
 ###############################################################################################
 # Supplementary Figure 1
-# Check for sig relationships between buoy/lake/attributes with error 
+# Check for sig relationships between buoy/lake/attributes with error
 ###############################################################################################
+
 
 def calc_mae_180(obs, pred):
     pred_180 = (pred + 180) % 360
@@ -1555,14 +1590,15 @@ high_errors.groupby("buoy_id")["buoy_id"].count()
 # Drop that buoy from the analysis (buchillonfieldstation)
 # Just for the wind speed because for the wind direction it is still able to be based on a 1km area within the lake
 
+
 ###############################################################################################
 # Figure 6. Scatterplot of the observed vs predicted wind speed
 ###############################################################################################
 
-# Only include wind speed calculated with ME < 30
 wspd_subset = wind_df[
-    ((wind_df["me"] < 30) & (wind_df["buoy_id"] != "buchillonfieldstation"))
+    ((wind_df["buoy_id"] != "buchillonfieldstation"))
 ].dropna(subset=["buoy_wspd_10m", "wspd_sat_cmod5n"])
+
 # Make it long for plotting
 wspd_subset_long = wspd_subset.melt(
     id_vars=["buoy_image_id", "buoy_wspd_10m", "wind_streak"],
@@ -1600,9 +1636,9 @@ wspd_subset_long["variable"] = wspd_subset_long["variable"].map(
 )
 
 # Calculate the x and y pairs for the S1 linear model
-s1_x = np.linspace(0, 20, 100)
+s1_x = np.linspace(0, 25, 100)
 s1_y = np.array([i * slope_sar + intercept_sar for i in s1_x])
-era5_x = np.linspace(0, 20, 100)
+era5_x = np.linspace(0, 25, 100)
 era5_y = np.array([i * slope_era5 + intercept_era5 for i in era5_x])
 
 fig, ax = plt.subplots(figsize=(6, 6))
@@ -1617,19 +1653,21 @@ sns.scatterplot(
     data=wspd_subset_long,
 )
 plt.plot(
-    np.linspace(0, 20, 100),
-    np.linspace(0, 20, 100),
+    np.linspace(0, 25, 100),
+    np.linspace(0, 25, 100),
     color="black",
     linestyle="--",
     linewidth=2,
 )
 plt.plot(s1_x, s1_y, color="#5ec962", linestyle="-", linewidth=2)
 plt.plot(era5_x, era5_y, color="#3b528b", linestyle="-", linewidth=2)
+ax.set_ylim(0, 25)
+ax.set_xlim(0, 25)
 ax.set_xlabel("Buoy wind speed (m/s)", size=12)
-ax.set_ylabel("Modeled wind speed (m/s)", size=12)
+ax.set_ylabel("Sentinel-1 C-band CMOD5.N Modeled Wind Speed (m/s)", size=12)
 ax.set_title("", size=12)
 ax.legend(title="")
-# plt.show()
+#plt.show()
 plt.savefig(os.path.join(home, "Data/Figures/wspd_buoy_scatter.png"), dpi=1000)
 
 
@@ -1649,6 +1687,8 @@ row = wind_df[
 row.wdir_buoy
 row.wdir_corrected
 save_examples(row)
+
+row.buoy_wspd_10m
 
 # Export ERA5 polygons cropped around the lake
 pld_subset = gpd.GeoDataFrame(
@@ -1709,3 +1749,312 @@ era5_poly = era5_poly.rename(columns={era5_poly.columns.values[0]: "wdir"})
 era5_poly.to_file(
     os.path.join(home, "Data/Outputs/", row["image_id"].iloc[0], "era5_grid.shp")
 )
+
+
+###############################################################################################
+# Look at the relationship between wind speed and sigma0 as it relates to
+# wind direction relative to satellite look direction
+# incidence angle
+# lake size
+###############################################################################################
+
+swot_subset = wind_df.loc[wind_df["satellite"] == "SWOT"]
+
+swot_subset["sig0_db"] = swot_subset["sig0"]
+swot_subset["sig0_db"] = np.where(
+    swot_subset["sig0_db"] <= 0, 0.01, swot_subset["sig0_db"]
+)
+swot_subset["sig0_db"] = np.log10(swot_subset["sig0_db"]) * 10
+
+
+# Overall
+fig, ax = plt.subplots(figsize=(6, 6))
+sns.scatterplot(data=swot_subset, x="wspd_buoy", y="sig0_db", color="#3b528b")
+ax.set_xlabel("Buoy wind speed (m/s)", size=12)
+ax.set_ylabel("SWOT Sigma0 (dB)", size=12)
+plt.savefig(
+    os.path.join(home, "Data/Figures/sig_wspd_buoy_scatter.png"),
+    dpi=1000,
+    bbox_inches="tight",
+)
+
+
+slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(
+    swot_subset.loc[swot_subset["sig0"] < 400]["buoy_wspd_10m"].tolist(),
+    swot_subset.loc[swot_subset["sig0"] < 400]["sig0"].tolist(),
+)
+slope
+intercept
+r_value
+p_value
+
+# Bin the wind speed incience angle
+swot_subset["wspd_buoy_bin"] = pd.cut(
+    swot_subset["wspd_buoy"],
+    [0, 2, 4, 6, 8, 20],
+    labels=["0-2", "2-4", "4-6", "6-8", ">8"],
+)
+swot_subset["inc_angle_bin"] = pd.cut(
+    swot_subset["inc_angle"],
+    [0.5, 1.5, 2.5, 3.5, 4.51],
+    labels=["0.5-1.5", "1.5-2.5", "2.5-3.5", "3.5-4.5"],
+)
+
+fig, ax = plt.subplots(figsize=(6, 6))
+sns.boxplot(
+    data=swot_subset,
+    x="wspd_buoy_bin",
+    y="sig0_db",
+    hue="inc_angle_bin",
+    palette="viridis",
+)
+ax.set_xlabel("Buoy Wind Speed (m/s)", size=12)
+ax.set_ylabel("SWOT Sigma0 (dB)", size=12)
+plt.legend(title="Incidence Angle")
+plt.savefig(
+    os.path.join(home, "Data/Figures/sig_wspd_inc_buoy_boxplot.png"),
+    dpi=1000,
+    bbox_inches="tight",
+)
+
+
+###############################################################################################
+###############################################################################################
+# Recreate the plot from AGU with incidence angle
+# Get wind speed from ERA5
+# Get sigma0 and incidence angle from SWOT raster product
+# Extract for each water body that I am studying
+###############################################################################################
+###############################################################################################
+
+from rasterstats import zonal_stats
+import gc
+import glob
+import pandas as pd
+import rioxarray
+import geopandas as gpd
+import time
+import os
+from datetime import datetime
+
+home = "C:/Users/kmcquil/Documents/SWOT_WIND/"
+swot_files = glob.glob(
+    os.path.join(home, "Data/SWOT_L2_HR_Raster/SWOT_L2_HR_Raster_2.0/*.nc")
+)
+boundary = gpd.read_file(os.path.join(home, "Data/Buoy/pld_with_buoys.shp"))
+
+
+def extract_swot(infile):
+
+    # Open the netcdf
+    ds = rioxarray.open_rasterio(infile, chunks="auto")
+    sig0 = ds.sig0
+    inc = ds.inc
+
+    # Filter
+    sig0 = sig0.where(sig0 != sig0.rio.nodata)
+    inc = inc.where(sig0 != sig0.rio.nodata)
+    sig0 = sig0.where(ds.sig0_qual <= 2)
+    inc = inc.where(ds.sig0_qual <= 2)
+
+    # Add the CRS
+    crs_wkt = sig0.crs.attrs["crs_wkt"]
+    crs_wkt_split = crs_wkt.split(",")
+    epsg = crs_wkt_split[len(crs_wkt_split) - 1].split('"')[1]
+    sig0.rio.write_crs("epsg:" + epsg, inplace=True)
+    inc.rio.write_crs("epsg:" + epsg, inplace=True)
+
+    # Project boundary shapefile to match ncdf
+    boundary_reproj = boundary.to_crs(sig0.rio.crs)
+    sig0_np = sig0.to_numpy()[0, :, :]
+    inc_np = inc.to_numpy()[0, :, :]
+    aff = sig0.rio.transform()
+    sig0_stats = pd.DataFrame(
+        zonal_stats(
+            boundary_reproj,
+            sig0_np,
+            affine=aff,
+            stats="mean",
+            nodata=sig0.rio.nodata,
+            all_touched=True,
+        )
+    ).rename(columns={"mean": "sig0_mean"})
+    inc_stats = pd.DataFrame(
+        zonal_stats(
+            boundary_reproj,
+            inc_np,
+            affine=aff,
+            stats="mean",
+            nodata=inc.rio.nodata,
+            all_touched=True,
+        )
+    ).rename(columns={"mean": "inc_mean"})
+    df = pd.concat([boundary_reproj["lake_id"].iloc[:], sig0_stats, inc_stats], axis=1)
+    df["image_id"] = os.path.basename(infile)[:-3]
+
+    ds.close()
+    gc.collect()
+
+    # Open the wind direction that matches the time
+    date = (
+        datetime.strptime(
+            os.path.basename(infile).split("_")[13][0:11], "%Y%m%dT%H"
+        ).strftime("%Y%m%d%H")
+        + "0000"
+    )
+    wdir_file = glob.glob(
+        os.path.join(home, "Data/ERA5/Processed/wdir/" + date + ".tif")
+    )
+    wspd_file = glob.glob(
+        os.path.join(home, "Data/ERA5/Processed/wspd/" + date + ".tif")
+    )
+    if (len(wdir_file) == 0) | (len(wspd_file) == 0):
+        df["wdir_mean"] = np.nan
+        df["wspd_mean"] = np.nan
+        return df
+
+    ds = rioxarray.open_rasterio(wdir_file[0], chunks=True)
+    ds_np = ds.to_numpy()[0, :, :]
+    aff = ds.rio.transform()
+    boundary_reproj = boundary_reproj.to_crs(ds.rio.crs)
+    df = pd.concat(
+        [
+            df,
+            pd.DataFrame(
+                zonal_stats(
+                    boundary_reproj,
+                    ds_np,
+                    affine=aff,
+                    stats="mean",
+                    nodata=ds.rio.nodata,
+                    all_touched=True,
+                )
+            ).rename(columns={"mean": "wdir_mean"}),
+        ],
+        axis=1,
+    )
+    ds.close()
+    gc.collect()
+
+    ds = rioxarray.open_rasterio(wspd_file[0], chunks=True)
+    ds_np = ds.to_numpy()[0, :, :]
+    aff = ds.rio.transform()
+    df = pd.concat(
+        [
+            df,
+            pd.DataFrame(
+                zonal_stats(
+                    boundary_reproj,
+                    ds_np,
+                    affine=aff,
+                    stats="mean",
+                    nodata=ds.rio.nodata,
+                    all_touched=True,
+                )
+            ).rename(columns={"mean": "wspd_mean"}),
+        ],
+        axis=1,
+    )
+    ds.close()
+    gc.collect()
+
+    return df
+
+
+# There are 350 total
+swot_df_list = []
+k = 0
+for file in swot_files:
+    k = k + 1
+    print(k)
+    swot_df_list.append(extract_swot(file))
+
+swot_df = pd.concat(swot_df_list)
+
+swot_df_1 = pd.read_csv(os.path.join(home, "Data/Outputs/swot_era5_lake_1_median.csv"))
+swot_df_2 = pd.read_csv(os.path.join(home, "Data/Outputs/swot_era5_lake_2_median.csv"))
+swot_df_3 = pd.read_csv(os.path.join(home, "Data/Outputs/swot_era5_lake_3_median.csv"))
+swot_df = pd.concat([swot_df_1, swot_df_2, swot_df_3], axis=0)
+swot_df = swot_df.dropna(subset=["sig0_mean", "inc_mean", "wdir_mean", "wspd_mean"])
+swot_df = swot_df.reset_index(drop=True)
+swot_df["lake_id"] = swot_df["lake_id"].astype("Int64").astype(str)
+swot_df = swot_df.merge(
+    pld[["lake_id", "ref_area"]], left_on="lake_id", right_on="lake_id", how="left"
+)
+
+# Bin the wind speed and incience angle
+swot_df["wspd_mean_bin"] = pd.cut(
+    swot_df["wspd_mean"],
+    [0, 2, 4, 6, 8, 20],
+    labels=["0-2", "2-4", "4-6", "6-8", ">8"],
+)
+swot_df["inc_mean_bin"] = pd.cut(
+    swot_df["inc_mean"],
+    [0.5, 1.5, 2.5, 3.5, 4.51],
+    labels=["0.5-1.5", "1.5-2.5", "2.5-3.5", "3.5-4.5"],
+)
+swot_df["ref_area_bin"] = pd.cut(
+    swot_df["ref_area"],
+    [0, 20, 100, 100000000],
+    labels=["0-20", "20-100", ">100"],
+)
+
+swot_df["sig0_mean_db"] = swot_df["sig0_mean"]
+swot_df["sig0_mean_db"] = np.where(
+    swot_df["sig0_mean_db"] <= 0, 0.01, swot_df["sig0_mean_db"]
+)
+swot_df["sig0_mean_db"] = np.log10(swot_df["sig0_mean_db"]) * 10
+
+# Overall
+fig, ax = plt.subplots(figsize=(6, 6))
+sns.scatterplot(data=swot_df, x="wspd_mean", y="sig0_mean_db", color="#3b528b")
+ax.set_xlabel("ERA5 wind speed (m/s)", size=12)
+ax.set_ylabel("SWOT Sigma0 (dB)", size=12)
+plt.savefig(
+    os.path.join(home, "Data/Figures/sig_wspd_era5_scatter.png"),
+    dpi=1000,
+    bbox_inches="tight",
+)
+
+slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(
+    swot_df["wspd_mean"].tolist(),
+    swot_df["sig0_mean"].tolist(),
+)
+slope
+intercept
+r_value
+p_value
+
+
+fig, ax = plt.subplots(figsize=(6, 6))
+sns.boxplot(
+    data=swot_df,
+    x="wspd_mean_bin",
+    y="sig0_mean_db",
+    hue="inc_mean_bin",
+    palette="viridis",
+)
+ax.set_xlabel("ERA5 Wind Speed (m/s)", size=12)
+ax.set_ylabel("SWOT Sigma0 (dB)", size=12)
+plt.legend(title="Incidence Angle")
+plt.show()
+plt.savefig(
+    os.path.join(home, "Data/Figures/sig_wspd_inc_era5_boxplot.png"),
+    dpi=1000,
+    bbox_inches="tight",
+)
+
+
+g = sns.FacetGrid(swot_df, col="ref_area_bin")
+g.map(
+    sns.boxplot,
+    data=swot_df,
+    x="wspd_mean_bin",
+    y="sig0_mean_db",
+    hue="inc_mean_bin",
+    palette="viridis",
+)
+plt.show()
+
+np.mean(wind_df['wspd_buoy'] - wind_df['buoy_wspd_10m'])
+
