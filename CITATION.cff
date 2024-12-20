@@ -1,0 +1,9 @@
+cff-version: 1.1.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: McQuillan
+  given-names: Katie
+orcid: https://orcid.org/0000-0001-7302-719X
+title:kmcquil/Wind_Over_Lakes_With_SAR: v1.0.0
+version: 1.0.0
+date-released: 2024-12-20
